@@ -10,15 +10,15 @@ models:
     columns:
       - name: pickup_date
         description: "Date of the trips."
-        tests:
+        data_tests:
           - not_null
       - name: pickup_zone
         description: "Name of the pickup zone."
-        tests:
+        data_tests:
           - not_null
       - name: trip_count
         description: "Number of trips originating from this zone on this date."
-        tests:
+        data_tests:
           - not_null
       - name: total_revenue
         description: "Sum of total_amount for all trips."
@@ -38,19 +38,19 @@ models:
     columns:
       - name: pickup_year
         description: "Year."
-        tests:
+        data_tests:
           - not_null
       - name: pickup_month
         description: "Month (1-12)."
-        tests:
+        data_tests:
           - not_null
       - name: pickup_zone
         description: "Name of the pickup zone."
-        tests:
+        data_tests:
           - not_null
       - name: trip_count
         description: "Total trips originating from this zone in the month."
-        tests:
+        data_tests:
           - not_null
       - name: active_days
         description: "Number of distinct days with at least one trip from this zone."
@@ -77,19 +77,19 @@ models:
     columns:
       - name: pickup_date
         description: "Date of the trips."
-        tests:
+        data_tests:
           - not_null
       - name: pickup_hour
         description: "Hour of the trips (0-23)."
-        tests:
+        data_tests:
           - not_null
       - name: pickup_borough
         description: "Borough of the pickup zone."
-        tests:
+        data_tests:
           - not_null
       - name: trip_count
         description: "Number of trips in this hour/borough."
-        tests:
+        data_tests:
           - not_null
       - name: avg_speed_mph
         description: "Average trip speed, usable as a congestion proxy."
@@ -105,21 +105,21 @@ models:
     columns:
       - name: pickup_year
         description: "Year."
-        tests:
+        data_tests:
           - not_null
       - name: pickup_month
         description: "Month (1-12)."
-        tests:
+        data_tests:
           - not_null
       - name: vendor_id
         description: "TPEP vendor identifier."
-        tests:
+        data_tests:
           - not_null
       - name: vendor_name
         description: "Human-readable vendor name."
       - name: trip_count
         description: "Total trips for this vendor in the month."
-        tests:
+        data_tests:
           - not_null
       - name: total_revenue
         description: "Total revenue for this vendor in the month."

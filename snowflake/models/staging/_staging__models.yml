@@ -6,23 +6,23 @@ models:
       Cleaned and renamed view over raw yellow taxi trip records.
       All columns are cast to explicit types and renamed to snake_case.
       A surrogate trip_id is generated via dbt_utils.generate_surrogate_key.
-      No rows are filtered at staging; filtering happens in the silver layer.
+      No rows are filtered at staging; filtering happens in the curated layer.
     columns:
       - name: trip_id
         description: "Surrogate key generated from pickup/dropoff timestamps, locations, vendor, and fare."
-        tests:
+        data_tests:
           - not_null
       - name: vendor_id
         description: "TPEP provider ID."
-        tests:
+        data_tests:
           - not_null
       - name: pickup_datetime
         description: "Timestamp when meter was engaged."
-        tests:
+        data_tests:
           - not_null
       - name: dropoff_datetime
         description: "Timestamp when meter was disengaged."
-        tests:
+        data_tests:
           - not_null
       - name: passenger_count
         description: "Number of passengers."
@@ -34,11 +34,11 @@ models:
         description: "Y/N flag for store-and-forward trips."
       - name: pickup_location_id
         description: "TLC Taxi Zone ID for pickup."
-        tests:
+        data_tests:
           - not_null
       - name: dropoff_location_id
         description: "TLC Taxi Zone ID for dropoff."
-        tests:
+        data_tests:
           - not_null
       - name: payment_type_id
         description: "Numeric payment method code."
@@ -54,18 +54,18 @@ models:
     columns:
       - name: location_id
         description: "Unique taxi zone identifier (1-265)."
-        tests:
+        data_tests:
           - unique
           - not_null
       - name: borough
         description: "NYC borough name."
-        tests:
+        data_tests:
           - not_null
       - name: zone_name
         description: "Name of the taxi zone."
-        tests:
+        data_tests:
           - not_null
       - name: service_zone
         description: "Service category (Yellow Zone, Boro Zone, Airports, EWR, N/A)."
-        tests:
+        data_tests:
           - not_null
