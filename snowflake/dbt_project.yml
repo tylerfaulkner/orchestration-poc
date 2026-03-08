@@ -1,0 +1,33 @@
+name: 'nyc_yellow_taxi'
+version: '1.0.0'
+
+profile: 'snowflake'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+macro-paths: ["macros"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+seeds:
+  nyc_yellow_taxi:
+    +schema: curated
+    +transient: false
+
+models:
+  nyc_yellow_taxi:
+    staging:
+      +materialized: view
+      +schema: curated
+    curated:
+      +materialized: table
+      +transient: false
+      +schema: curated
+    mrt:
+      +materialized: table
+      +transient: false
+      +schema: mrt

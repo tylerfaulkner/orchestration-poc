@@ -1,0 +1,61 @@
+version: 2
+
+sources:
+  - name: edl
+    description: "Raw data loaded into Snowflake from the NYC TLC dataset via Databricks ingestion pipelines."
+    database: WBMIQA_ORCHPOC_DB
+    schema: "{{ var('env') }}_EDL"
+    tables:
+      - name: YELLOW_TAXI_TRIPS
+        description: "NYC Yellow Taxi trip records. Each row represents one metered taxi trip."
+        columns:
+          - name: VendorID
+            description: "TPEP provider code. 1=Creative Mobile Technologies, 2=Curb Mobility, 6=Myle Technologies, 7=Helix."
+          - name: tpep_pickup_datetime
+            description: "Timestamp when the meter was engaged."
+          - name: tpep_dropoff_datetime
+            description: "Timestamp when the meter was disengaged."
+          - name: passenger_count
+            description: "Number of passengers in the vehicle."
+          - name: trip_distance
+            description: "Elapsed trip distance in miles reported by the taximeter."
+          - name: RatecodeID
+            description: "Final rate code. 1=Standard, 2=JFK, 3=Newark, 4=Nassau/Westchester, 5=Negotiated, 6=Group, 99=Unknown."
+          - name: store_and_fwd_flag
+            description: "Y=trip record held in vehicle memory before transmission, N=transmitted immediately."
+          - name: PULocationID
+            description: "TLC Taxi Zone ID where the meter was engaged."
+          - name: DOLocationID
+            description: "TLC Taxi Zone ID where the meter was disengaged."
+          - name: payment_type
+            description: "Payment method code. 0=Flex Fare, 1=Credit Card, 2=Cash, 3=No Charge, 4=Dispute, 5=Unknown, 6=Voided."
+          - name: fare_amount
+            description: "Time-and-distance fare from the meter."
+          - name: extra
+            description: "Miscellaneous extras and surcharges."
+          - name: mta_tax
+            description: "MTA tax triggered by the metered rate."
+          - name: tip_amount
+            description: "Tip amount (only populated for credit card tips)."
+          - name: tolls_amount
+            description: "Total tolls paid."
+          - name: improvement_surcharge
+            description: "Improvement surcharge at flag drop."
+          - name: total_amount
+            description: "Total charged to passenger (excludes cash tips)."
+          - name: congestion_surcharge
+            description: "NYS congestion surcharge."
+          - name: airport_fee
+            description: "Fee for pickups at LaGuardia and JFK airports."
+
+      - name: TAXI_ZONE_LOOKUP
+        description: "Reference table mapping TLC Taxi Zone IDs to borough, zone name, and service zone."
+        columns:
+          - name: LocationID
+            description: "Unique taxi zone identifier (1-265)."
+          - name: Borough
+            description: "NYC borough (Manhattan, Brooklyn, Queens, Bronx, Staten Island, EWR, Unknown, N/A)."
+          - name: Zone
+            description: "Name of the taxi zone."
+          - name: service_zone
+            description: "Service category (Yellow Zone, Boro Zone, Airports, EWR, N/A)."

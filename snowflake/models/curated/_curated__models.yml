@@ -1,0 +1,215 @@
+version: 2
+
+models:
+  - name: dim_location
+    description: >
+      Enriched taxi zone dimension with analytical flags for airport status,
+      borough grouping, yellow zone eligibility, and Manhattan sub-regions.
+      Rebuilt as a full table on each run (~265 rows).
+    columns:
+      - name: location_id
+        description: "Unique taxi zone identifier."
+        tests:
+          - unique
+          - not_null
+      - name: borough
+        description: "NYC borough name."
+        tests:
+          - not_null
+      - name: zone_name
+        description: "Name of the taxi zone."
+        tests:
+          - not_null
+      - name: service_zone
+        description: "Service category (Yellow Zone, Boro Zone, Airports, EWR, N/A)."
+        tests:
+          - not_null
+      - name: is_airport
+        description: "True if this zone is an airport (JFK, LaGuardia, or EWR)."
+      - name: is_ewr
+        description: "True if this zone is Newark Liberty International Airport."
+      - name: is_yellow_zone
+        description: "True if this zone is in the Yellow Zone service area."
+      - name: borough_group
+        description: "High-level grouping: Manhattan, Outer Borough, New Jersey, or Other."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Manhattan', 'Outer Borough', 'New Jersey', 'Other']
+      - name: manhattan_subregion
+        description: "Sub-region within Manhattan (Midtown, Lower Manhattan, Upper Manhattan, Northern Manhattan, Other Manhattan). Null for non-Manhattan zones."
+
+  - name: fact_yellow_taxi_trips
+    description: >
+      Fully enriched yellow taxi trip fact table. Each trip is joined with
+      vendor, rate code, payment type, store-and-forward, and location
+      dimension data for both pickup and dropoff. Includes calculated fields
+      for trip duration, speed, tip percentage, fare efficiency, and
+      categorical flags (rush hour, weekend, late night, airport, cross-borough).
+      Incremental: new monthly data is merged using pickup_datetime as the watermark.
+      Implausible records are filtered out (negative fares, >24hr trips, >500mi).
+    columns:
+      # ── Primary key ──
+      - name: trip_id
+        description: "Surrogate key for the trip."
+        tests:
+          - not_null
+          - unique
+
+      # ── Timestamps ──
+      - name: pickup_datetime
+        description: "Timestamp when the meter was engaged."
+        tests:
+          - not_null
+      - name: dropoff_datetime
+        description: "Timestamp when the meter was disengaged."
+        tests:
+          - not_null
+      - name: pickup_date
+        description: "Date of pickup (derived from pickup_datetime)."
+        tests:
+          - not_null
+      - name: pickup_day_of_week
+        description: "Day of week abbreviation (Mon, Tue, etc.)."
+        tests:
+          - accepted_values:
+              values: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      - name: pickup_hour
+        description: "Hour of pickup (0-23)."
+        tests:
+          - not_null
+      - name: pickup_month
+        description: "Month of pickup (1-12)."
+        tests:
+          - not_null
+      - name: pickup_year
+        description: "Year of pickup."
+        tests:
+          - not_null
+
+      # ── Trip metrics ──
+      - name: trip_duration_seconds
+        description: "Trip duration in seconds."
+        tests:
+          - not_null
+      - name: trip_duration_minutes
+        description: "Trip duration in minutes (rounded to 2 decimal places)."
+        tests:
+          - not_null
+      - name: trip_distance_miles
+        description: "Trip distance in miles per the taximeter."
+        tests:
+          - not_null
+      - name: passenger_count
+        description: "Number of passengers in the vehicle."
+      - name: avg_speed_mph
+        description: "Average speed in mph. Null for zero-duration or zero-distance trips."
+
+      # ── Vendor (referential integrity) ──
+      - name: vendor_id
+        description: "TPEP vendor identifier."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('vendor')
+              field: vendor_id
+              config:
+                severity: warn
+      - name: vendor_name
+        description: "Human-readable vendor name from vendor seed."
+
+      # ── Rate code (referential integrity) ──
+      - name: rate_code_id
+        description: "Rate code at end of trip."
+        tests:
+          - relationships:
+              to: ref('rate_code')
+              field: rate_code_id
+      - name: rate_code_name
+        description: "Human-readable rate code from rate_code seed."
+
+      # ── Payment type (referential integrity) ──
+      - name: payment_type_id
+        description: "Numeric payment method code."
+        tests:
+          - relationships:
+              to: ref('payment_type')
+              field: payment_type_id
+      - name: payment_type_name
+        description: "Human-readable payment type from payment_type seed."
+
+      # ── Store and forward ──
+      - name: store_and_fwd_flag
+        description: "Y/N flag for store-and-forward trips."
+        tests:
+          - accepted_values:
+              values: ['Y', 'N']
+
+      # ── Location (referential integrity) ──
+      - name: pickup_location_id
+        description: "TLC Taxi Zone ID for pickup."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_location')
+              field: location_id
+      - name: dropoff_location_id
+        description: "TLC Taxi Zone ID for dropoff."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_location')
+              field: location_id
+      - name: pickup_borough
+        description: "Borough of the pickup zone."
+      - name: pickup_zone
+        description: "Name of the pickup zone."
+      - name: dropoff_borough
+        description: "Borough of the dropoff zone."
+      - name: dropoff_zone
+        description: "Name of the dropoff zone."
+
+      # ── Fare components ──
+      - name: fare_amount
+        description: "Metered fare amount in dollars."
+        tests:
+          - not_null
+      - name: total_amount
+        description: "Total charged amount in dollars."
+        tests:
+          - not_null
+      - name: tip_amount
+        description: "Tip amount (credit card only)."
+      - name: tolls_amount
+        description: "Total tolls paid."
+
+      # ── Calculated fare metrics ──
+      - name: tip_percentage
+        description: "Tip as a percentage of fare. Null when fare is zero."
+      - name: fare_per_mile
+        description: "Fare divided by trip distance. Null when distance is zero."
+      - name: fare_per_minute
+        description: "Fare divided by trip duration in minutes. Null when duration is zero."
+
+      # ── Categorical flags ──
+      - name: is_rush_hour
+        description: "True if pickup hour is 7-9 AM or 4-7 PM."
+        tests:
+          - not_null
+      - name: is_weekend
+        description: "True if pickup is on Saturday or Sunday."
+        tests:
+          - not_null
+      - name: is_late_night
+        description: "True if pickup hour is between midnight and 5 AM."
+        tests:
+          - not_null
+      - name: is_airport_trip
+        description: "True if either pickup or dropoff zone is an airport."
+        tests:
+          - not_null
+      - name: trip_borough_type
+        description: "Same Borough or Cross Borough based on pickup vs dropoff borough."
+        tests:
+          - accepted_values:
+              values: ['Same Borough', 'Cross Borough']

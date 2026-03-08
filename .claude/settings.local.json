@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.getdbt.com)",
+      "WebFetch(domain:github.com)"
+    ]
+  }
+}

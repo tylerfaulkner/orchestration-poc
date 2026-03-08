@@ -1,0 +1,139 @@
+version: 2
+
+models:
+  - name: agg_daily_zone_summary
+    description: >
+      Daily aggregation at the pickup-zone level. One row per (pickup_date, pickup_zone).
+      Contains trip counts, revenue totals, averages, and payment mix.
+      Designed for operational dashboards, zone heatmaps, and demand pattern analysis.
+      Incremental: new daily data is merged using pickup_date as the watermark.
+    columns:
+      - name: pickup_date
+        description: "Date of the trips."
+        tests:
+          - not_null
+      - name: pickup_zone
+        description: "Name of the pickup zone."
+        tests:
+          - not_null
+      - name: trip_count
+        description: "Number of trips originating from this zone on this date."
+        tests:
+          - not_null
+      - name: total_revenue
+        description: "Sum of total_amount for all trips."
+      - name: avg_tip_percentage
+        description: "Average tip as a percentage of fare."
+      - name: avg_speed_mph
+        description: "Average trip speed in mph."
+
+  - name: agg_monthly_zone_summary
+    description: >
+      Monthly aggregation at the pickup-zone level. One row per
+      (pickup_year, pickup_month, pickup_zone). Contains trip counts,
+      revenue totals, averages, payment mix, and time-of-day distribution.
+      Includes active_days and avg_daily_trips for normalized comparison
+      across months of different lengths.
+      Incremental: new monthly data is merged using year/month as the watermark.
+    columns:
+      - name: pickup_year
+        description: "Year."
+        tests:
+          - not_null
+      - name: pickup_month
+        description: "Month (1-12)."
+        tests:
+          - not_null
+      - name: pickup_zone
+        description: "Name of the pickup zone."
+        tests:
+          - not_null
+      - name: trip_count
+        description: "Total trips originating from this zone in the month."
+        tests:
+          - not_null
+      - name: active_days
+        description: "Number of distinct days with at least one trip from this zone."
+      - name: avg_daily_trips
+        description: "Average trips per active day (trip_count / active_days)."
+      - name: total_revenue
+        description: "Sum of total_amount for all trips."
+      - name: avg_tip_percentage
+        description: "Average tip as a percentage of fare."
+      - name: credit_card_pct
+        description: "Percentage of trips paid by credit card."
+      - name: rush_hour_trips
+        description: "Number of trips during rush hour periods."
+      - name: weekend_trips
+        description: "Number of trips on Saturday or Sunday."
+      - name: late_night_trips
+        description: "Number of trips between midnight and 5 AM."
+
+  - name: agg_hourly_demand
+    description: >
+      Hourly aggregation at the borough level. One row per (pickup_date, pickup_hour, pickup_borough).
+      Designed for demand forecasting, surge pricing analysis, and shift scheduling optimization.
+      Incremental: new daily data is merged using pickup_date as the watermark.
+    columns:
+      - name: pickup_date
+        description: "Date of the trips."
+        tests:
+          - not_null
+      - name: pickup_hour
+        description: "Hour of the trips (0-23)."
+        tests:
+          - not_null
+      - name: pickup_borough
+        description: "Borough of the pickup zone."
+        tests:
+          - not_null
+      - name: trip_count
+        description: "Number of trips in this hour/borough."
+        tests:
+          - not_null
+      - name: avg_speed_mph
+        description: "Average trip speed, usable as a congestion proxy."
+      - name: cross_borough_trip_count
+        description: "Number of trips ending in a different borough."
+
+  - name: agg_vendor_performance
+    description: >
+      Monthly vendor-level performance scorecard. One row per (pickup_year, pickup_month, vendor_id).
+      Contains volume, revenue efficiency, tipping behavior, payment mix, connectivity health
+      (store-and-forward rate), and trip type distribution.
+      Incremental: new monthly data is merged using year/month as the watermark.
+    columns:
+      - name: pickup_year
+        description: "Year."
+        tests:
+          - not_null
+      - name: pickup_month
+        description: "Month (1-12)."
+        tests:
+          - not_null
+      - name: vendor_id
+        description: "TPEP vendor identifier."
+        tests:
+          - not_null
+      - name: vendor_name
+        description: "Human-readable vendor name."
+      - name: trip_count
+        description: "Total trips for this vendor in the month."
+        tests:
+          - not_null
+      - name: total_revenue
+        description: "Total revenue for this vendor in the month."
+      - name: avg_fare_per_mile
+        description: "Average fare per mile driven."
+      - name: avg_tip_percentage
+        description: "Average tip percentage across all trips."
+      - name: credit_card_pct
+        description: "Percentage of trips paid by credit card."
+      - name: cash_pct
+        description: "Percentage of trips paid by cash."
+      - name: store_and_fwd_pct
+        description: "Percentage of trips with store-and-forward flag (connectivity issues)."
+      - name: airport_trip_pct
+        description: "Percentage of trips involving an airport."
+      - name: rush_hour_trip_pct
+        description: "Percentage of trips during rush hour."
