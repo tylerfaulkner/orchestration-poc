@@ -1,3 +1,4 @@
 logs/dbt.log
 .venv/
-.claude/
+.claude/*
+
