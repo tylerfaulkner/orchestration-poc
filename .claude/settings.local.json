@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:docs.getdbt.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(git -C /c/Users/Kent/DEV/orchestration-poc log --oneline)",
+      "Bash(echo \"exit: $?\")"
     ]
   }
 }
