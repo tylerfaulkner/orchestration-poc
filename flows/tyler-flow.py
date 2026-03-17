@@ -3,20 +3,14 @@ from prefect_databricks import DatabricksCredentials
 from prefect_databricks.flows import jobs_runs_submit_by_id_and_wait_for_completion
 from prefect_snowflake import  SnowflakeConnector
 from prefect_dbt import PrefectDbtRunner, PrefectDbtSettings
-from prefect_databricks.jobs import jobs_run_now
 
 @flow()
 def trigger_dbx_ingestion():
     creds = DatabricksCredentials.load("tyler-databricks-creds")
-    run_id = jobs_run_now(
+    run = jobs_runs_submit_by_id_and_wait_for_completion(       
         databricks_credentials=creds,
         job_id=874003545683509
-    )['run_id']
-    print(run_id)
-    # run = jobs_runs_submit_by_id_and_wait_for_completion(       
-    #     databricks_credentials=creds,
-    #     job_id=874003545683509
-    # )
+    )
     return run
 
 @task
@@ -108,5 +102,5 @@ if __name__ == "__main__":
     ).deploy(
         name='Tyler - Deployed Flow',
         work_pool_name='tyler-managed-pool',
-        job_variables={"image": "prefecthq/prefect:3-latest", "pip_packages": ["pandas", "azure-identity", "azure-keyvault-secrets", "dbt-core"]},
+        job_variables={"image": "prefecthq/prefect:3-latest", "pip_packages": ["pandas", "azure-identity", "azure-keyvault-secrets", "dbt-core", "prefect[databricks]", "prefect[snowflake]", "prefect[dbt]"]},
     )
