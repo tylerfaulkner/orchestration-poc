@@ -98,7 +98,7 @@ if __name__ == "__main__":
     #main_flow.serve(name="Tyler - Main Flow", cron="0 0 1 * *")
     flow.from_source(
         source="https://github.com/tylerfaulkner/orchestration-poc.git",
-        entrypoint="flows/tyler-flow.py:main_flow"
+        entrypoint="tyler-flow.py:main_flow"
     ).deploy(
         name='Tyler - Deployed Flow',
         work_pool_name='tyler-managed-pool',
