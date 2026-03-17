@@ -1,12 +1,9 @@
-from tkinter.filedialog import test
-
 from prefect import flow, task
 from prefect_databricks import DatabricksCredentials
 from prefect_databricks.flows import jobs_runs_submit_by_id_and_wait_for_completion
-from prefect_snowflake import SnowflakeCredentials, SnowflakeConnector
+from prefect_snowflake import  SnowflakeConnector
 from prefect_dbt import PrefectDbtRunner, PrefectDbtSettings
 from prefect_databricks.jobs import jobs_run_now
-import asyncio
 
 @flow()
 def trigger_dbx_ingestion():
@@ -105,7 +102,11 @@ def main_flow():
 if __name__ == "__main__":
     #main_flow()
     #main_flow.serve(name="Tyler - Main Flow", cron="0 0 1 * *")
-    main_flow.deploy(
+    flow.from_source(
+        source="https://github.com/tylerfaulkner/orchestration-poc.git",
+        entrypoint="flows/tyler-flow.py:main_flow"
+    ).deploy(
         name='Tyler - Deployed Flow',
-        work_pool_name='tyler-managed-pool'
+        work_pool_name='tyler-managed-pool',
+        job_variables={"image": "prefecthq/prefect:3-latest", "pip_packages": ["pandas", "azure-identity", "azure-keyvault-secrets", "dbt-core"]},
     )
