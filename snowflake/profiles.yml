@@ -5,7 +5,7 @@ snowflake:
       type: snowflake
       account: WBMI-ENTERPRISE     # e.g. xy12345.us-east-1
       user: QA_SERVICE_USER_POC
-      password: "{{ prefect.blocks.tyler-snowflake-creds.password }}"
+      password: "{{ prefect.blocks.snowflake-credentials.tyler-snowflake-creds.password }}"
       role: qa_service_ent_etl               # e.g. SYSADMIN
       warehouse: VWH_ADHOC     # e.g. COMPUTE_WH
       database: WBMIQA_ORCHPOC_DB
