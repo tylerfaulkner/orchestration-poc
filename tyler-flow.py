@@ -37,7 +37,13 @@ def create_edl_tables():
 
 @task
 def run_dbt():
-        PrefectDbtRunner(
+    PrefectDbtRunner(
+        settings=PrefectDbtSettings(
+            project_dir="snowflake",
+            profiles_dir="snowflake"
+        )
+    ).invoke(["deps"])
+    PrefectDbtRunner(
         settings=PrefectDbtSettings(
             project_dir="snowflake",
             profiles_dir="snowflake"
@@ -102,5 +108,5 @@ if __name__ == "__main__":
     ).deploy(
         name='Tyler - Deployed Flow',
         work_pool_name='tyler-managed-pool',
-        job_variables={"image": "prefecthq/prefect:3-latest", "pip_packages": ["pandas", "azure-identity", "azure-keyvault-secrets", "dbt-core", "prefect[databricks]", "prefect[snowflake]", "prefect[dbt]"]},
+        job_variables={"image": "prefecthq/prefect:3-latest", "pip_packages": ["pandas", "azure-identity", "azure-keyvault-secrets", "dbt-core", "prefect[databricks]", "prefect[snowflake]", "prefect[dbt]", "prefect[snowflake]", "dbt-snowflake", "prefect-dbt[snowflake]"]},
     )
